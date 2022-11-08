@@ -1,0 +1,9 @@
+7a8
+> ARG DEBIAN_FRONTEND=noninteractive
+81a83
+>         mysql-community-server-debug="${MYSQL_VERSION}" \
+97c99
+< CMD ["mysqld"]
+---
+> CMD ["mysqld-debug"]
+\ No newline at end of file

@@ -1,0 +1,15 @@
+services:
+  mysql:
+    container_name: xmysql-tests
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=root
+      - MYSQL_ROOT_PASSWORD=mysql
+    ports:
+      - 13399:3306
+      - 23399:33060
+    volumes:
+      - data:/var/lib/mysql
+
+volumes:
+  data:
