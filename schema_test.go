@@ -60,3 +60,35 @@ func TestSchemaExists(t *testing.T) {
 		xt.Assert(t, !have)
 	})
 }
+
+func TestCurrentSchema(t *testing.T) {
+	t.Run("when connection has schema", func(t *testing.T) {
+		exp := "information_schema"
+		dns, err := ReplaceDSNDatabase(testDSN, exp)
+		xt.OK(t, err)
+
+		db, err := sql.Open("mysql", dns)
+		xt.OK(t, err)
+		defer func() { _ = db.Close() }()
+
+		have, err := CurrentSchema(db)
+		xt.OK(t, err)
+
+		xt.Eq(t, exp, have)
+	})
+
+	t.Run("when connection does not have a schema set", func(t *testing.T) {
+		exp := ""
+		dns, err := ReplaceDSNDatabase(testDSN, exp)
+		xt.OK(t, err)
+
+		db, err := sql.Open("mysql", dns)
+		xt.OK(t, err)
+		defer func() { _ = db.Close() }()
+
+		have, err := CurrentSchema(db)
+		xt.OK(t, err)
+
+		xt.Eq(t, exp, have)
+	})
+}
