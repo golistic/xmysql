@@ -48,3 +48,24 @@ func SchemaExists(db *sql.DB, name string) (bool, error) {
 	}
 	return true, nil
 }
+
+// CurrentSchema returns the name of the current schema of db.
+func CurrentSchema(db *sql.DB) (string, error) {
+	q := "SELECT SCHEMA()"
+
+	var cancel context.CancelFunc
+	ctx := context.Background()
+	ctx, cancel = context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	var name *string
+	if err := db.QueryRowContext(ctx, q).Scan(&name); err != nil {
+		return "", NewError(err)
+	}
+
+	if name == nil {
+		return "", nil
+	}
+
+	return *name, nil
+}
