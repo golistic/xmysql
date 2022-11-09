@@ -45,7 +45,7 @@ func TestSchemaExists(t *testing.T) {
 		xt.Assert(t, have)
 	})
 
-	t.Run("schema does not exists", func(t *testing.T) {
+	t.Run("schema does not exist", func(t *testing.T) {
 		have, err := SchemaExists(testDB, "mysqlmysqlmysql")
 		xt.OK(t, err)
 		xt.Assert(t, !have)
