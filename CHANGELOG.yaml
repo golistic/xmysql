@@ -1,0 +1,15 @@
+xmysql:
+  - meta:
+      projectURL: https://github.com/golistic/xmysql
+      description: |
+        All notable changes to this project will be documented in this file.
+        Note: Using YAML is experimental, but since it is human readable, should be OK.
+  - versions:
+      - version: v1.1.0
+        date: 2022-11-10
+        added:
+          - Added CurrentSchema() to return name of connection's schema
+          - Added TableExist() to return whether a table exists
+      - version: v1.0.0
+        date: 2022-11-08
+        description: Initial release
