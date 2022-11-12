@@ -10,12 +10,15 @@ import (
 
 	"github.com/geertjanvdk/xkit/xlog"
 	"github.com/go-sql-driver/mysql"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
 	reQuoteStrings = regexp.MustCompile(`'(.*?)'`)
 	reGoPkg        = regexp.MustCompile(`.*?/go/(src|pkg)/`)
 	reCnxRefused   = regexp.MustCompile(`dial (\w+) (.*?): connect: connection refused`)
+	reMySQLError   = regexp.MustCompile(`Error (\w+): (.*)`)
 )
 
 // MySQL Server errors which are handled by this package.
@@ -97,6 +100,7 @@ func (e Error) Error() string {
 	})
 
 	if e.MySQLError != nil && e.Number > 0 {
+		logEntry.WithField("errorNumber", e.Number)
 		m := e.Message
 		m = strings.Replace(m, "an't", "annot", -1)
 		m = strings.Replace(m, "oesn't", "does not", -1)
@@ -111,7 +115,8 @@ func (e Error) Error() string {
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 2)
 			logMsg = fmt.Sprintf("'%s' not available", parts[0][1])
 		default:
-			logMsg = e.Err.Error()
+			parts := reMySQLError.FindStringSubmatch(e.Err.Error())
+			logMsg = cases.Lower(language.English, cases.Compact).String(parts[2])
 		}
 	} else {
 		logMsg = e.Err.Error()

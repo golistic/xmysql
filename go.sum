@@ -4,3 +4,5 @@ github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfC
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/golistic/xstrings v1.0.0 h1:blYH9nNTAc6f+tYQ8XVMQ6YtSwOKh5N1ldVnRI3CTMo=
 github.com/golistic/xstrings v1.0.0/go.mod h1:0OequtLc+tesHgj1mgTpe+/nka4sVnfUO5IYmpxLPCc=
+golang.org/x/text v0.4.0 h1:BrVqGRd7+k1DiOgtnFvAkoQEWQvBc25ouMJM6429SFg=
+golang.org/x/text v0.4.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
