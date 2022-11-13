@@ -5,8 +5,8 @@ package xmysql
 import (
 	"testing"
 
-	"github.com/geertjanvdk/xkit/xt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/golistic/xt"
 )
 
 func TestNewError(t *testing.T) {
