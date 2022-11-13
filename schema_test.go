@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/geertjanvdk/xkit/xt"
+	"github.com/golistic/xt"
 )
 
 func TestCreateSchema(t *testing.T) {

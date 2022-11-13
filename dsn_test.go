@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/geertjanvdk/xkit/xt"
+	"github.com/golistic/xt"
 )
 
 var baseDSN = "u:pwd@tcp(127.0.0.1:3306)/"
