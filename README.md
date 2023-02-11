@@ -17,6 +17,6 @@ Uses the excellent [Go MySQL Driver][1].
 License
 -------
 
-Distributed under the MIT license. See `LICENSE.txt` for more information.
+Distributed under the MIT license. See `LICENSE.md` for more information.
 
 [1]: https://github.com/go-sql-driver/mysql
