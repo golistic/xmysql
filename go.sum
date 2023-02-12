@@ -6,5 +6,7 @@ github.com/golistic/xstrings v1.0.0 h1:blYH9nNTAc6f+tYQ8XVMQ6YtSwOKh5N1ldVnRI3CT
 github.com/golistic/xstrings v1.0.0/go.mod h1:0OequtLc+tesHgj1mgTpe+/nka4sVnfUO5IYmpxLPCc=
 github.com/golistic/xt v1.0.0 h1:s0CASEyLXylddqXLtZAALz1+ZL63USw5b4t49RegERo=
 github.com/golistic/xt v1.0.0/go.mod h1:j1ZuWefyOD4HegoapgSjbXanA7X9YOKUeEB5gsEPgYg=
+github.com/golistic/xt v1.0.1 h1:prcwpL757GEu+dj6x2v6vxHkulkFdyQ3S1PqO+6ohPM=
+github.com/golistic/xt v1.0.1/go.mod h1:j1ZuWefyOD4HegoapgSjbXanA7X9YOKUeEB5gsEPgYg=
 golang.org/x/text v0.4.0 h1:BrVqGRd7+k1DiOgtnFvAkoQEWQvBc25ouMJM6429SFg=
 golang.org/x/text v0.4.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
