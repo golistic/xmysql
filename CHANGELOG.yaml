@@ -5,6 +5,11 @@ xmysql:
         All notable changes to this project will be documented in this file.
         Note: Using YAML is experimental, but since it is human readable, should be OK.
   - versions:
+      - version: v1.2.0
+        date: 2023-02-12
+        added:
+          - Added SQLw() to substitute placeholders to, for example, add the table
+            name in dynamic SQL statements
       - version: v1.1.0
         date: 2022-11-10
         added:
