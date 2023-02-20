@@ -9,6 +9,13 @@ require (
 )
 
 require (
-	github.com/golistic/xstrings v1.0.0
+	github.com/golistic/xstrings v1.1.0
 	golang.org/x/text v0.4.0
+)
+
+require (
+	github.com/golistic/pxmysql v0.9.2 // indirect
+	github.com/golistic/xconv v0.0.0-20220527181646-954959c73312 // indirect
+	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )
