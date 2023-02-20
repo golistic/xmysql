@@ -10,6 +10,7 @@ import (
 
 	"github.com/geertjanvdk/xkit/xlog"
 	"github.com/go-sql-driver/mysql"
+	"github.com/golistic/pxmysql/mysqlerrors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -32,12 +33,13 @@ const (
 // as file information where the error occurred, query with values
 // when available, and normalized and nicer message.
 type Error struct {
-	*mysql.MySQLError
-	Err      error
-	Query    string
-	Values   []any
-	Filename string
-	Line     int
+	Message     string
+	DriverError error
+	Query       string
+	Values      []any
+	Filename    string
+	Line        int
+	Number      int
 }
 
 // NewError returns a new xmysql.Error, storing err.
@@ -66,18 +68,22 @@ func NewErrorQuery(err error, query string, values []any) Error {
 }
 
 func newError(err error) Error {
-	myErr, ok := err.(*mysql.MySQLError)
+	e := Error{DriverError: err}
 
-	e := Error{Err: err}
-	if ok {
-		e.MySQLError = myErr
+	switch v := err.(type) {
+	case *mysql.MySQLError:
+		// from go-sql-driver/mysql
+		e.Number = int(v.Number)
+	case *mysqlerrors.Error:
+		// from golistic/pxmysql
+		e.Number = v.Code
 	}
 
-	var fn string
-	var line int
-	_, fn, line, ok = runtime.Caller(3)
-	if strings.Contains(fn, "golistic/xmysql") {
-		_, fn, line, _ = runtime.Caller(2)
+	_, fn, line, ok := runtime.Caller(3)
+	if ok {
+		if strings.Contains(fn, "golistic/xmysql") {
+			_, fn, line, _ = runtime.Caller(2)
+		}
 	}
 
 	e.Filename = reGoPkg.ReplaceAllString(fn, "")
@@ -90,21 +96,21 @@ func newError(err error) Error {
 func (e Error) Error() string {
 	var logMsg string
 
-	if e.MySQLError != nil && e.Message != "" {
+	if e.DriverError != nil && e.Message != "" {
 		logMsg = e.Message
 	}
 
 	logEntry := xlog.WithFields(xlog.Fields{
-		"mysqlError":       e.Err.Error(),
+		"mysqlError":       e.DriverError.Error(),
 		xlog.FieldFileLine: fmt.Sprintf("%s:%d", e.Filename, e.Line),
 	})
 
-	if e.MySQLError != nil && e.Number > 0 {
+	if e.Number > 0 {
 		logEntry.WithField("errorNumber", e.Number)
 		m := e.Message
 		m = strings.Replace(m, "an't", "annot", -1)
 		m = strings.Replace(m, "oesn't", "does not", -1)
-		switch e.Number {
+		switch uint16(e.Number) {
 		case ErrDBCreateExists:
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 1)
 			logMsg = fmt.Sprintf("schema '%s' not available", parts[0][1])
@@ -115,11 +121,11 @@ func (e Error) Error() string {
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 2)
 			logMsg = fmt.Sprintf("'%s' not available", parts[0][1])
 		default:
-			parts := reMySQLError.FindStringSubmatch(e.Err.Error())
+			parts := reMySQLError.FindStringSubmatch(e.DriverError.Error())
 			logMsg = cases.Lower(language.English, cases.Compact).String(parts[2])
 		}
 	} else {
-		logMsg = e.Err.Error()
+		logMsg = e.DriverError.Error()
 		parts := reCnxRefused.FindStringSubmatch(logMsg)
 		if parts != nil {
 			logMsg = fmt.Sprintf("MySQL connection refused (tried %s)", parts[2])
@@ -156,7 +162,7 @@ func IsDBCreateExists(err error) bool {
 // ErrorIs returns whether err matches the MySQL Server Error number.
 func ErrorIs(err error, number uint16) bool {
 	e, ok := err.(Error)
-	return ok && e.MySQLError != nil && e.Number == number
+	return ok && e.DriverError != nil && uint16(e.Number) == number
 }
 
 // ErrorTxBegin returns a xmysql.Error, storing err, and setting a fixed
