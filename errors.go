@@ -4,6 +4,7 @@ package xmysql
 
 import (
 	"fmt"
+	"net"
 	"regexp"
 	"runtime"
 	"strings"
@@ -16,17 +17,18 @@ import (
 )
 
 var (
-	reQuoteStrings = regexp.MustCompile(`'(.*?)'`)
-	reGoPkg        = regexp.MustCompile(`.*?/go/(src|pkg)/`)
-	reCnxRefused   = regexp.MustCompile(`dial (\w+) (.*?): connect: connection refused`)
-	reMySQLError   = regexp.MustCompile(`Error (\w+): (.*)`)
+	reQuoteStrings       = regexp.MustCompile(`'(.*?)'`)
+	reGoPkg              = regexp.MustCompile(`.*?/go/(src|pkg)/`)
+	reCnxRefused         = regexp.MustCompile(`dial (\w+) (.*?): connect: connection refused`)
+	reGoMySQLDriverError = regexp.MustCompile(`Error (\w+): (.*)`)
 )
 
-// MySQL Server errors which are handled by this package.
+// Error numbers of MySQL handled by this package.
 const (
-	ErrDBCreateExists uint16 = 1007
-	ErrDBDropExists          = 1008
-	ErrDubEntry              = 1062
+	ErrDBCreateExists    int = 1007
+	ErrDBDropExists      int = 1008
+	ErrDubEntry          int = 1062
+	ErrClientConnRefused int = 2005
 )
 
 // Error wraps mysql.MySQLError with additional information such
@@ -94,10 +96,15 @@ func newError(err error) Error {
 
 // Error returns the string representation of the e.
 func (e Error) Error() string {
-	var logMsg string
+	var msg string
 
-	if e.DriverError != nil && e.Message != "" {
-		logMsg = e.Message
+	switch {
+	case e.Message != "":
+		msg = e.Message
+	case e.DriverError != nil:
+		msg = e.DriverError.Error()
+	default:
+		msg = "unknown MySQL error"
 	}
 
 	logEntry := xlog.WithFields(xlog.Fields{
@@ -105,30 +112,50 @@ func (e Error) Error() string {
 		xlog.FieldFileLine: fmt.Sprintf("%s:%d", e.Filename, e.Line),
 	})
 
+	// if we have an error number, we try to correct the message
 	if e.Number > 0 {
 		logEntry.WithField("errorNumber", e.Number)
 		m := e.Message
 		m = strings.Replace(m, "an't", "annot", -1)
 		m = strings.Replace(m, "oesn't", "does not", -1)
-		switch uint16(e.Number) {
+		switch e.Number {
 		case ErrDBCreateExists:
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 1)
-			logMsg = fmt.Sprintf("schema '%s' not available", parts[0][1])
+			msg = fmt.Sprintf("schema '%s' not available", parts[0][1])
 		case ErrDBDropExists:
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 1)
-			logMsg = fmt.Sprintf("schema '%s' does not exists", parts[0][1])
+			msg = fmt.Sprintf("schema '%s' does not exists", parts[0][1])
 		case ErrDubEntry:
 			parts := reQuoteStrings.FindAllStringSubmatch(m, 2)
-			logMsg = fmt.Sprintf("'%s' not available", parts[0][1])
+			msg = fmt.Sprintf("'%s' not available", parts[0][1])
 		default:
-			parts := reMySQLError.FindStringSubmatch(e.DriverError.Error())
-			logMsg = cases.Lower(language.English, cases.Compact).String(parts[2])
+			parts := reGoMySQLDriverError.FindStringSubmatch(msg)
+			if len(parts) == 3 {
+				msg = cases.Lower(language.English, cases.Compact).String(parts[2])
+			}
 		}
-	} else {
-		logMsg = e.DriverError.Error()
-		parts := reCnxRefused.FindStringSubmatch(logMsg)
-		if parts != nil {
-			logMsg = fmt.Sprintf("MySQL connection refused (tried %s)", parts[2])
+	}
+
+	// Go's 'connection refused' message
+	//switch v := e.DriverError.(type) {
+	//case *mysql.MySQLError:
+	//	parts := reCnxRefused.FindStringSubmatch(msg)
+	//	if len(parts) == 3 {
+	//		msg = fmt.Sprintf("unknown MySQL server host '%s' (%w)", parts[1])
+	//	}
+	//}
+
+	switch v := e.DriverError.(type) {
+	case *net.OpError:
+		const f = "unknown MySQL server host '%s' (%s) [2005:HY000]"
+
+		unwrapped := strings.TrimPrefix(v.Unwrap().Error(), "connect: ")
+		parts := reCnxRefused.FindStringSubmatch(msg)
+		e.Number = ErrClientConnRefused
+		if len(parts) == 3 {
+			msg = fmt.Sprintf(f, parts[2], unwrapped)
+		} else {
+			msg = fmt.Sprintf(f, "<unknown>", unwrapped)
 		}
 	}
 
@@ -145,13 +172,12 @@ func (e Error) Error() string {
 				}
 			}
 			logEntry.WithField("queryValues", e.Values)
-		} else {
 		}
 	}
 
-	logEntry.Error(logMsg)
+	logEntry.Error(msg)
 
-	return logMsg
+	return msg
 }
 
 // IsDBCreateExists returns whether err is Error and ErrDBCreateExists.
@@ -160,9 +186,9 @@ func IsDBCreateExists(err error) bool {
 }
 
 // ErrorIs returns whether err matches the MySQL Server Error number.
-func ErrorIs(err error, number uint16) bool {
+func ErrorIs(err error, number int) bool {
 	e, ok := err.(Error)
-	return ok && e.DriverError != nil && uint16(e.Number) == number
+	return ok && e.DriverError != nil && e.Number == number
 }
 
 // ErrorTxBegin returns a xmysql.Error, storing err, and setting a fixed
