@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/geertjanvdk/xkit/xlog"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -117,14 +116,8 @@ func (e Error) Error() string {
 		msg = "unknown MySQL error"
 	}
 
-	logEntry := xlog.WithFields(xlog.Fields{
-		"mysqlError":       e.DriverError.Error(),
-		xlog.FieldFileLine: fmt.Sprintf("%s:%d", e.Filename, e.Line),
-	})
-
 	// if we have an error number, we try to correct the message
 	if e.Number > 0 {
-		logEntry.WithField("errorNumber", e.Number)
 		m := e.Message
 		m = strings.Replace(m, "an't", "annot", -1)
 		m = strings.Replace(m, "oesn't", "does not", -1)
@@ -146,17 +139,9 @@ func (e Error) Error() string {
 		}
 	}
 
-	// Go's 'connection refused' message
-	// switch v := e.DriverError.(type) {
-	// case *mysql.MySQLError:
-	//	parts := reCnxRefused.FindStringSubmatch(msg)
-	//	if len(parts) == 3 {
-	//		msg = fmt.Sprintf("unknown MySQL server host '%s' (%w)", parts[1])
-	//	}
-	// }
-
-	switch v := e.DriverError.(type) {
-	case *net.OpError:
+	var v *net.OpError
+	switch {
+	case errors.As(e.DriverError, &v):
 		const f = "unknown MySQL server host '%s' (%s) [2005:HY000]"
 
 		unwrapped := strings.TrimPrefix(v.Unwrap().Error(), "connect: ")
@@ -168,24 +153,6 @@ func (e Error) Error() string {
 			msg = fmt.Sprintf(f, "<unknown>", unwrapped)
 		}
 	}
-
-	if e.Query != "" {
-		logEntry.WithField("query", e.Query)
-		if e.Values != nil {
-			strValues := make([]string, len(e.Values))
-			for i, value := range e.Values {
-				switch v := value.(type) {
-				case []byte:
-					strValues[i] = string(v)
-				default:
-					strValues[i] = fmt.Sprintf("%#v", v)
-				}
-			}
-			logEntry.WithField("queryValues", e.Values)
-		}
-	}
-
-	logEntry.Error(msg)
 
 	return msg
 }
