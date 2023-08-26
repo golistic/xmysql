@@ -3,15 +3,15 @@
 package xmysql
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
 
 	"github.com/geertjanvdk/xkit/xlog"
-	"github.com/go-sql-driver/mysql"
-	"github.com/golistic/pxmysql/mysqlerrors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -72,13 +72,23 @@ func NewErrorQuery(err error, query string, values []any) Error {
 func newError(err error) Error {
 	e := Error{DriverError: err}
 
-	switch v := err.(type) {
-	case *mysql.MySQLError:
-		// from go-sql-driver/mysql
-		e.Number = int(v.Number)
-	case *mysqlerrors.Error:
-		// from golistic/pxmysql
-		e.Number = v.Code
+	rv := reflect.ValueOf(err)
+	if rv.Kind() == reflect.Pointer {
+		rv = rv.Elem()
+	}
+
+	if rv.IsValid() && rv.Kind() == reflect.Struct {
+		f := rv.FieldByName("Number")
+		if f.IsValid() && !f.IsZero() {
+			switch f.Kind() {
+			case reflect.Uint16:
+				// github.com/go-sql-driver/mysql uses uint16
+				e.Number = int(f.Uint())
+			case reflect.Int:
+				// github.com/golistic/pxmysql uses int
+				e.Number = int(f.Int())
+			}
+		}
 	}
 
 	_, fn, line, ok := runtime.Caller(3)
@@ -137,13 +147,13 @@ func (e Error) Error() string {
 	}
 
 	// Go's 'connection refused' message
-	//switch v := e.DriverError.(type) {
-	//case *mysql.MySQLError:
+	// switch v := e.DriverError.(type) {
+	// case *mysql.MySQLError:
 	//	parts := reCnxRefused.FindStringSubmatch(msg)
 	//	if len(parts) == 3 {
 	//		msg = fmt.Sprintf("unknown MySQL server host '%s' (%w)", parts[1])
 	//	}
-	//}
+	// }
 
 	switch v := e.DriverError.(type) {
 	case *net.OpError:
@@ -187,7 +197,8 @@ func IsDBCreateExists(err error) bool {
 
 // ErrorIs returns whether err matches the MySQL Server Error number.
 func ErrorIs(err error, number int) bool {
-	e, ok := err.(Error)
+	var e Error
+	ok := errors.As(err, &e)
 	return ok && e.DriverError != nil && e.Number == number
 }
 
