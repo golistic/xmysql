@@ -3,7 +3,6 @@ xmysql:
       projectURL: https://github.com/golistic/xmysql
       description: |
         All notable changes to this project will be documented in this file.
-        Note: Using YAML is experimental, but since it is human readable, should be OK.
   - versions:
       - version: v1.3.0
         date: 2023-02-20
@@ -12,8 +11,16 @@ xmysql:
         versions:
           - version: v1.3.1
             date: 2023-05-01
-            fixed:
+            fix:
               - handle connection-refused errors
+          - version: v1.3.2
+            date: 2023-08-26
+            fix:
+              - stop loading MySQL Go SQL drivers when handling errors
+              - remove logging of errors
+            refactor:
+              - move DSN functions to github.com/golistic/xgo/xsql (retraining current functionality as
+                deprecated
       - version: v1.2.0
         date: 2023-02-12
         added:
