@@ -9,11 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golistic/xgo/xsql"
 	"github.com/golistic/xt"
 )
 
 func TestTableExists(t *testing.T) {
-	dns, err := ReplaceDSNDatabase(testDSN, "information_schema")
+	dns, err := xsql.ReplaceDSNDatabase(testDSN, "information_schema")
 	xt.OK(t, err)
 
 	db, err := sql.Open("mysql", dns)
@@ -48,7 +49,7 @@ func TestTableComment(t *testing.T) {
 
 	xt.OK(t, CreateSchema(testDB, schemaName))
 
-	dns, err := ReplaceDSNDatabase(testDSN, schemaName)
+	dns, err := xsql.ReplaceDSNDatabase(testDSN, schemaName)
 	xt.OK(t, err)
 
 	db, err := sql.Open("mysql", dns)

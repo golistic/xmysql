@@ -16,6 +16,7 @@ require (
 require (
 	github.com/golistic/pxmysql v0.9.2 // indirect
 	github.com/golistic/xconv v0.0.0-20220527181646-954959c73312 // indirect
+	github.com/golistic/xgo v0.0.0-20230826092103-162a17a02ad9 // indirect
 	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

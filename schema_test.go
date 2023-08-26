@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/golistic/xgo/xsql"
 	"github.com/golistic/xt"
 )
 
@@ -64,7 +65,7 @@ func TestSchemaExists(t *testing.T) {
 func TestCurrentSchema(t *testing.T) {
 	t.Run("when connection has schema", func(t *testing.T) {
 		exp := "information_schema"
-		dns, err := ReplaceDSNDatabase(testDSN, exp)
+		dns, err := xsql.ReplaceDSNDatabase(testDSN, exp)
 		xt.OK(t, err)
 
 		db, err := sql.Open("mysql", dns)
@@ -79,7 +80,7 @@ func TestCurrentSchema(t *testing.T) {
 
 	t.Run("when connection does not have a schema set", func(t *testing.T) {
 		exp := ""
-		dns, err := ReplaceDSNDatabase(testDSN, exp)
+		dns, err := xsql.ReplaceDSNDatabase(testDSN, exp)
 		xt.OK(t, err)
 
 		db, err := sql.Open("mysql", dns)
