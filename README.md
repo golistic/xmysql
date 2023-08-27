@@ -1,18 +1,14 @@
 xmysql - MySQL Utilities for Go
 ===============================
 
-Copyright (c) 2022, Geert JM Vanderkelen
+Copyright (c) 2022, 2023, Geert JM Vanderkelen
 
 The Go xmysql package offers functionality for MySQL.  
-For example, to create and drop a schema you could use respectively 
-`CreateSchema()`
-and `DropSchema()`.
+For example, to create and drop a schema you could use respectively
+`CreateSchema()` and `DropSchema()`.
 
-This package fulfills the need of the author, but could be useful for others,
-or be an inspiration.
-
-Uses the excellent [Go MySQL Driver][1].
-
+This package is SQL driver agnostic as long as MySQL is used. Both [Go MySQL Driver][1],
+using the conventional protocol, and [Go MySQL Driver using X Protocol][2] will work.
 
 License
 -------
@@ -20,3 +16,5 @@ License
 Distributed under the MIT license. See `LICENSE.md` for more information.
 
 [1]: https://github.com/go-sql-driver/mysql
+
+[2]: https://github.com/golistic/pxmysql
