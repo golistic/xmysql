@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golistic/xstrings"
+	"github.com/golistic/xgo/xstrings"
 )
 
 type LogOutput string

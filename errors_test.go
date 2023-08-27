@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/golistic/pxmysql/mysqlerrors"
-	"github.com/golistic/xt"
+	"github.com/golistic/xgo/xt"
 
 	"github.com/golistic/xmysql"
 
@@ -21,7 +21,7 @@ func TestNewError(t *testing.T) {
 
 	t.Run("golistic/pxmysql", func(t *testing.T) {
 		t.Run("connection refused", func(t *testing.T) {
-			db, err := sql.Open("mysqlpx", ":@tcp(127.0.0.1:33445)/")
+			db, err := sql.Open("pxmysql", ":@tcp(127.0.0.1:33445)/")
 			xt.OK(t, err)
 			defer func() { _ = db.Close() }()
 
