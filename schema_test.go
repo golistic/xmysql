@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/golistic/xgo/xsql"
-	"github.com/golistic/xt"
+	"github.com/golistic/xgo/xt"
 )
 
 func TestCreateSchema(t *testing.T) {

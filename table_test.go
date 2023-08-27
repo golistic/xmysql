@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/golistic/xgo/xsql"
-	"github.com/golistic/xt"
+	"github.com/golistic/xgo/xt"
 )
 
 func TestTableExists(t *testing.T) {
