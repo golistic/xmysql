@@ -77,15 +77,17 @@ func newError(err error) Error {
 	}
 
 	if rv.IsValid() && rv.Kind() == reflect.Struct {
-		f := rv.FieldByName("Number")
-		if f.IsValid() && !f.IsZero() {
-			switch f.Kind() {
-			case reflect.Uint16:
-				// github.com/go-sql-driver/mysql uses uint16
-				e.Number = int(f.Uint())
-			case reflect.Int:
-				// github.com/golistic/pxmysql uses int
-				e.Number = int(f.Int())
+		for _, n := range []string{"Code", "Number"} {
+			f := rv.FieldByName(n)
+			if f.IsValid() && !f.IsZero() {
+				switch f.Kind() {
+				case reflect.Uint16:
+					// github.com/go-sql-driver/mysql uses uint16
+					e.Number = int(f.Uint())
+				case reflect.Int:
+					// github.com/golistic/pxmysql uses int
+					e.Number = int(f.Int())
+				}
 			}
 		}
 	}
