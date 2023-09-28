@@ -120,7 +120,7 @@ func (e Error) Error() string {
 
 	// if we have an error number, we try to correct the message
 	if e.Number > 0 {
-		m := e.Message
+		m := msg
 		m = strings.Replace(m, "an't", "annot", -1)
 		m = strings.Replace(m, "oesn't", "does not", -1)
 		switch e.Number {
