@@ -13,19 +13,35 @@ import (
 func TestCreateSchema(t *testing.T) {
 	t.Run("create schema", func(t *testing.T) {
 		schemaName := "xmysql_test_ifk29389wldow"
-		defer func() { _ = DropSchema(testDB, schemaName) }()
+		_, err := testDB.Exec("DROP SCHEMA IF EXISTS `" + schemaName + "`")
+		xt.OK(t, err)
+		defer func() { _, _ = testDB.Exec("DROP SCHEMA IF EXISTS `" + schemaName + "`") }()
 
 		xt.OK(t, CreateSchema(testDB, schemaName))
 
 		// next should fail
-		err := CreateSchema(testDB, schemaName)
+		err = CreateSchema(testDB, schemaName)
+		xt.KO(t, err)
+		xt.Assert(t, IsDBCreateExists(err))
+	})
+
+	t.Run("with special characters", func(t *testing.T) {
+		schemaName := "xmysql_test_::$$%%%"
+		_, err := testDB.Exec("DROP SCHEMA IF EXISTS `" + schemaName + "`")
+		xt.OK(t, err)
+		defer func() { _, _ = testDB.Exec("DROP SCHEMA IF EXISTS `" + schemaName + "`") }()
+
+		xt.OK(t, CreateSchema(testDB, schemaName))
+
+		// next should fail
+		err = CreateSchema(testDB, schemaName)
 		xt.KO(t, err)
 		xt.Assert(t, IsDBCreateExists(err))
 	})
 }
 
 func TestDropSchema(t *testing.T) {
-	t.Run("create schema", func(t *testing.T) {
+	t.Run("scrop schema", func(t *testing.T) {
 		schemaName := "xmysql_test_fiei2o3if"
 		defer func() { _ = DropSchema(testDB, schemaName) }()
 

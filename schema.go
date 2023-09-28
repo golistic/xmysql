@@ -12,7 +12,7 @@ import (
 //
 // When error is returned, it is of type xmysql.Error.
 func CreateSchema(db *sql.DB, name string) error {
-	if _, err := db.ExecContext(context.Background(), "CREATE SCHEMA "+name); err != nil {
+	if _, err := db.ExecContext(context.Background(), "CREATE SCHEMA `"+name+"`"); err != nil {
 		return NewError(err)
 	}
 
@@ -23,7 +23,7 @@ func CreateSchema(db *sql.DB, name string) error {
 //
 // When error is returned, it is of type xmysql.Error.
 func DropSchema(db *sql.DB, name string) error {
-	if _, err := db.ExecContext(context.Background(), "DROP SCHEMA "+name); err != nil {
+	if _, err := db.ExecContext(context.Background(), "DROP SCHEMA `"+name+"`"); err != nil {
 		return NewError(err)
 	}
 
